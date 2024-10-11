@@ -1,0 +1,119 @@
+
+esphome:
+  name: outbuilding-esp8266
+  comment: outbuilding ESP8266 controller
+
+esp8266:
+  board: d1_mini
+  framework:
+    version: recommended
+
+wifi:
+  #use_address: 192.168.17.206
+  networks:
+  - ssid: !secret wifi_ssid
+    password: !secret wifi_password
+    manual_ip:
+      static_ip: xx:xx:xx:xx
+      gateway: xx:xx:xx:xx
+      subnet: xx:xx:xx:xx
+      dns1: xx:xx:xx:xx
+  - ssid: !secret wifi_ssid_backup
+    password: !secret wifi_password
+    manual_ip:
+      static_ip: xx:xx:xx:xx
+      gateway: xx:xx:xx:xx
+      subnet: xx:xx:xx:xx
+      dns1: xx:xx:xx:xx
+  ap:
+    ssid: "OutbuildingFallback"
+    password: !secret wifi_password
+  domain: .lan
+  
+ota:
+  platform: esphome
+
+web_server:
+  port: 80
+
+api:
+
+captive_portal:
+  
+one_wire:
+  - platform: gpio
+    pin: 
+      number: GPIO02
+  
+# Sync time with Home Assistant.
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+debug:
+  update_interval: 60s
+# Logger must be at least debug (default)
+logger:
+  level: debug
+  esp8266_store_log_strings_in_flash : false
+  tx_buffer_size: 128
+  logs:
+    sensor: WARN
+    time: WARN
+    dallas: WARN
+    wifi: WARN
+    wifi_signal.sensor: WARN
+    text_sensor: WARN
+    dallas.sensor: WARN
+    dallas.temp.sensor: WARN
+    switch: WARN
+
+sensor:
+  - platform: dallas_temp
+    address: 0x353c01b556c6be28
+    name: "Outbuilding temperature"
+    force_update: True
+  - platform: dallas_temp
+    address: 0x240b237505e83428
+    name: "Outbuilding temperature 2"
+    force_update: True
+  - platform: dallas_temp
+    address: 0x740b237509208728
+    name: "Outbuilding temperature 3"
+    force_update: True
+  - platform: wifi_signal
+    name: "Outbuilding RSSI"
+    id: outbuilding_rssi_db
+    update_interval: 60s
+    force_update: True
+  - platform: uptime
+    name: Uptime Sensor
+  - platform: debug
+    free:
+      name: "outbuilding-esp8266 Heap Free"
+    fragmentation:
+      name: "outbuilding-esp8266 Heap Fragmentation"
+    block:
+      name: "outbuilding-esp8266 Heap Max Block"
+    loop_time:
+      name: "outbuilding-esp8266 Loop Time"
+  - platform: adc
+    pin: VCC
+    name: "VCC Voltage"
+
+text_sensor:
+  - platform: debug
+    device:
+      name: "outbuilding ESP8266 Device Info"
+    reset_reason:
+      name: "outbuilding ESP8266 Reset Reason"
+  - platform: wifi_info
+    ssid:
+      name: ESP Connected SSID
+
+switch:
+  - platform: restart
+    name: "Restart"
+  - platform: gpio
+    pin: GPIO04
+    name: "Outbuilding_thermostat"
